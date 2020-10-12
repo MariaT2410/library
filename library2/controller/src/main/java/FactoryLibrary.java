@@ -3,49 +3,86 @@ import com.google.gson.reflect.TypeToken;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-
-
 public class FactoryLibrary {
 
-    private   int id;
-    private  String name;
-    private int counterCell;
+    private static FactoryLibrary instance;
 
-    public String getName() {
-        return name;
+    public static FactoryLibrary getInstance() throws Exception {
+        if (instance == null) {
+            instance = new FactoryLibrary();
+        }
+        return instance;
+    }
+    private FactoryLibrary() throws Exception {
+        numberOfId = new AtomicInteger(0);
+        books = new HashMap<Integer, Book>();
+        autors = new HashMap<Integer, Autor>();
+        populateAutors();
+        populateBooks();
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+    Library l = new Library(5555, "Библиотека", 32);
 
-    public int getId() {
-        return id;
-    }
 
-    public void setId(int id) {
-        this.id = id;
-    }
+    private static final int BOOKS_SIZE = 340;
+    private static final int AUTORS_SIZE = 50;
 
-    public int getCounterCell() {
-        return counterCell;
-    }
+    private static Map<Integer, Book> books = new HashMap<Integer, Book>();
+    private static Map<Integer, Autor> autors = new HashMap<Integer, Autor>();
+    private AtomicInteger numberOfId;
 
-    public void setCounterCell(int counterCell) {
-        this.counterCell = counterCell;
-    }
 
-    public FactoryLibrary() {
-    }
+    private final Random random = new Random();
 
-    //сщздать библиотеку заданной вмнстимости counterCell
-    public FactoryLibrary(int id, String name, int counterCell) {
-        this.id = id;
-        this.name = name;
-        this.counterCell = counterCell;
+    private void populateBooks() throws Exception {
+        if (l.getCounterCell() < BOOKS_SIZE) {
+            throw new Exception("Мало ячеек для заполнеия");
+        } else{
+            for (int i = 0; i < BOOKS_SIZE; i++) {
+                Book d = new Book(numberOfId.getAndIncrement(), "Book  " + i, random.nextInt(AUTORS_SIZE));
+                books.put(d.getId(), d);
+            }
+        }
+
     }
 
 
+
+    private void populateAutors() {
+        for (int i = 0; i < AUTORS_SIZE; i++) {
+            Autor d = new Autor(numberOfId.getAndIncrement(), "Autor  " + i);
+            autors.put(d.getId(), d);
+        }
+    }
+
+    public List<Book> getBooksByAutorId(int idAutor) {
+        Collection<Book> c = books.values();
+        List<Book> list = new ArrayList<Book>(c);
+        List<Book> booksGet = new ArrayList<>();
+        for (Book book : list) {
+            if (book.getId() == idAutor) {
+                booksGet.add(book);
+            }
+        }
+        return booksGet;
+    }
+    public void addBook(Book book){
+        Optional<Map.Entry<Integer, Book>> m = books.entrySet().stream()
+                .filter(entry -> entry.getValue().equals(null))
+                .findFirst();
+        showConsole(books.put(m.get().getKey(), book));
+    }
+
+
+    public void takeBook(int numberCell){
+        showConsole(books.get(numberCell));
+        books.replace(numberCell, null);
+
+    }
+    public void showConsole(Object o){
+        System.out.println("Book");
+        System.out.println("Book: " + o);
+    }
 
 
 
